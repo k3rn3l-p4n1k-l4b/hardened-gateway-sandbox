@@ -1,6 +1,6 @@
-# Headless Mac Fort-Box: Dual-Killswitch Torrenting Server with Automated Antivirus Pipeline
+# Hardened Egress Gateway & Automated Secure Ingestion Sandbox
 
-An architectural blueprint for repurposing an old, upgraded MacBook Pro (yes i had 2) into an isolated, headless torrenting server. This repository presents an enterprise-grade approach to network engineering, endpoint hardening, and automated pipeline security. 
+An architectural blueprint for repurposing an old, upgraded MacBook Pro (yes i had 2) into an isolated, Data Ingestion Application. This repository presents an enterprise-grade approach to network engineering, endpoint hardening, and automated pipeline security. 
 
 ---
 
@@ -17,9 +17,9 @@ An architectural blueprint for repurposing an old, upgraded MacBook Pro (yes i h
 
 ### 1. Privacy Preservation (The Dual-Killswitch Engine)
 Standard VPN configurations routinely leak unencrypted data during microsecond disconnection windows, service crashes, or boot cycles. This project implements three strict, overlapping layers of absolute boundary enforcement:
-*   **Software Layer:** The torrent daemon is hard-bound exclusively to the virtual network adapter interface (`tun0`), rendering it incapable of initiating sockets over raw wires.
+*   **Software Layer:** The data ingestion application is hard-bound exclusively to the virtual network adapter interface (`tun0`), rendering it incapable of initiating sockets over raw wires.
 *   **OS Firewall Layer (`ufw`):** System-wide firewall policies default to a hard `DENY` for incoming and outgoing data, strictly restricting out-of-tunnel physical data transmissions.
-*   **Hardware Gateway Layer (TP-Link Omada ACL):** A centralized network gateway policy enforces stateful traffic packet drops at the physical home router border if the host operating system is ever compromised.
+*   **Hardware Gateway Layer (SDN ACL):** A centralized network gateway policy enforces stateful traffic packet drops at the physical home router border if the host operating system is ever compromised.
 
 ### 2. Attack Surface Reduction (Network Isolation)
 To protect the local home network, the machine is isolated to a specific network segment. Using strict local firewall filtering, **only a single designated Admin Workstation** is granted network authorization to access the SSH console (Port 22) and the Web Dashboard (Port 8080). All other local network discovery attempts are instantly dropped.
@@ -44,9 +44,9 @@ This project served as an intensive exercise in Linux systems administration, lo
 *   **The Solution:** Restructured the physical interface bootstrap architecture by adding explicit firewall rules for outbound traffic over `53/udp`. This opened up standard network address lookups while safely keeping the rest of the physical interface securely blocked.
 
 ### Challenge 3: Application Password Obscurity in Background Daemons
-*   **The Symptom:** Upon deploying the `qbittorrent-nox` package as a system background service (`Type=forking`), the critical, securely randomized default web administrator password was completely missing from system logs (`journalctl`), preventing first-time access.
+*   **The Symptom:** Upon deploying the Data Ingestion Application as a system background service (`Type=forking`), the critical, securely randomized default web administrator password was completely missing from system logs (`journalctl`), preventing first-time access.
 *   **The Root Cause Analysis:** When a software binary forks itself manually using the background daemon flag (`-d`), it detaches from the systemd standard controller output wrapper. Consequently, the initialization stdout stream (which contains the one-time secure password) prints out into an untracked process memory vacuum instead of routing to the system logger.
-*   **The Solution:** Refactored the custom Linux initialization runtime configuration (`qbittorrent-nox.service`). Altered the system execution topology from `Type=forking` to **`Type=simple`** and removed the detached background flag from the execution binary arguments. This forced the running software process to stay actively attached to systemd, cleanly streaming its entire terminal startup sequence and secure access tokens directly into the accessible system log registers.
+*   **The Solution:** Refactored the custom Linux initialization runtime configuration (`Data Ingestion Application`). Altered the system execution topology from `Type=forking` to **`Type=simple`** and removed the detached background flag from the execution binary arguments. This forced the running software process to stay actively attached to systemd, cleanly streaming its entire terminal startup sequence and secure access tokens directly into the accessible system log registers.
 
 ### Challenge 4: Missing Local USB Drive Mappings Across System Boot Sequences
 *   **The Symptom:** The attached 1TB external storage drive failed to mount to standard `/media/` directories automatically, causing file download scripts to break on system reboots.
@@ -77,9 +77,9 @@ Following the successful initial deployment of the server node, the machine was 
 *   **The Solution:** Resolved this by manually injecting a static host route exception into the routing engine table: `sudo ip route add XXX.XXX.XXX.XXX/32 via YYY.YYY.YYY.YYY dev XX_physical_nic_XX`. This instructs the kernel to explicitly route responses bound for the exact Admin PC IP back through the local physical interface and hardware gateway, bypassing the VPN tunnel entirely. To automate this permanently across reboots and IP renewals, this static exception was written into an execution delay script (`route-delay 2`) tied directly into the VPN client's native initialization hook structure.
 
 #### 2. The "Missing Files" File Handler Panic (Dynamic Hardware Letter Drifts)
-*   **The Symptom:** After the physical rack power cycle, the qBittorrent Web UI transfer panel flagged active downloads with a red exclamation point and locked up under a `Missing files` status error.
-*   **The Root Cause Analysis:** Because the external USB storage array was physically disconnected and re-connected during the rack installation, the Linux kernel initialized the storage controllers in a different sequence on boot. This caused the storage block locations to dynamically swap letters (shifting the 1TB partition label from `/dev/sdXX` over to a different target node block). While our permanent hardware table layout (`/etc/fstab`) successfully tracked the change using the disk's unique **UUID** and mapped it to the correct path, the torrent background daemon initialized a few milliseconds *before* the storage mount sequence finished. Finding an empty directory path, the application assumed the files had been hard-deleted and panicked, throwing a protective file-handler lock to prevent corrupted chunk writes.
+*   **The Symptom:** After the physical rack power cycle, the Data Ingestion Application Web UI transfer panel flagged active downloads with a red exclamation point and locked up under a `Missing files` status error.
+*   **The Root Cause Analysis:** Because the external USB storage array was physically disconnected and re-connected during the rack installation, the Linux kernel initialized the storage controllers in a different sequence on boot. This caused the storage block locations to dynamically swap letters (shifting the 1TB partition label from `/dev/sdXX` over to a different target node block). While our permanent hardware table layout (`/etc/fstab`) successfully tracked the change using the disk's unique **UUID** and mapped it to the correct path, the data ingestion background daemon initialized a few milliseconds *before* the storage mount sequence finished. Finding an empty directory path, the application assumed the files had been hard-deleted and panicked, throwing a protective file-handler lock to prevent corrupted chunk writes.
 *   **The Solution:** Restructured the recovery sequence into an optimized three-tier workflow:
     1.  Executed `sudo mount -a` to force an immediate system table re-read and mount confirmation.
-    2.  Bounced the background application memory (`sudo systemctl restart qbittorrent-nox`) to clear the dead process logs and force the daemon to recognize the newly mapped storage directories.
-    3.  Triggered an interactive application **`Force Recheck`** directly inside the Web UI dashboard panel. This forced the core software engine to recursively scan the blocks inside the isolated `/mnt/usb-storage/torrent_in_progress/` directory, verify the exact data percentage bit-by-bit, and seamlessly shift the torrent status back into a functional, optimized `Downloading` loop.
+    2.  Bounced the background application memory (`sudo systemctl restart Data Ingestion Application`) to clear the dead process logs and force the daemon to recognize the newly mapped storage directories.
+    3.  Triggered an interactive application **`Force Recheck`** directly inside the Web UI dashboard panel. This forced the core software engine to recursively scan the blocks inside the isolated `/mnt/usb-storage/data_transfer_in_progress/` directory, verify the exact data percentage bit-by-bit, and seamlessly shift the torrent status back into a functional, optimized `Downloading` loop.
