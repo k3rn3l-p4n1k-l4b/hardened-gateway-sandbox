@@ -55,14 +55,6 @@ This project served as an intensive exercise in Linux systems administration, lo
 
 ---
 
-## ⚖️ Legal, Ethical, and Compliance Notice
-
-This repository is presented solely as an educational technical framework for systems hardening, local area network micro-segmentation, and secure data pipeline orchestration. 
-
-Users are strictly advised and reminded to utilize peer-to-peer file sharing applications **responsibly, safely, and ethically** . All downloading and hosting operations must align with your respective federal, state, regional, and local copyright laws . The developer of this guide does not condone, promote, or assume liability for the unauthorized distribution, reproduction, or acquisition of copyrighted intellectual property.
-
----
-
 ## 📂 Repository Blueprint
 *   `README.md` - Technical portfolio overview, architectural review, and engineering troubleshooting journal (this file).
 *   [`DEPLOYMENT.md`](./DEPLOYMENT.md) - **The Complete Guide:** Chronological, step-by-step production manual mapping out the server build from bare-metal up to final verification.
