@@ -25,7 +25,7 @@ Standard VPN configurations routinely leak unencrypted data during microsecond d
 To protect the local home network, the machine is isolated to a specific network segment. Using strict local firewall filtering, **only a single designated Admin Workstation** is granted network authorization to access the SSH console (Port 22) and the Web Dashboard (Port 8080). All other local network discovery attempts are instantly dropped.
 
 ### 3. Supply Chain Security (Sanitization Pipeline)
-Downloaded files from public peer networks represent an untrusted security risk. To prevent arbitrary malware payloads from crossing over into a clean network environment, this machine leverages a fully automated post-download orchestration pipeline using an asynchronous shell scanner engine (**ClamAV**).
+Unverified External Assets from public peer networks represent an untrusted security risk. To prevent arbitrary malware payloads from crossing over into a clean network environment, this machine leverages a fully automated post-download orchestration pipeline using an asynchronous shell scanner engine (**ClamAV**).
 
 ---
 
